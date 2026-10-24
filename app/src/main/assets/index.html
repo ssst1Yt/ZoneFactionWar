@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#101610"><title>ЗОНА: Война группировок — мобильный прототип</title>
+<style>
+:root{--bg:#101610;--panel:#1b251b;--line:#52634a;--muted:#a9b7a1;--lime:#c2d66b;--red:#e26a55;--blue:#73b5da}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:#0a0e0b;color:#e8eadf;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow:hidden;touch-action:none}
+button,select{font:inherit;color:inherit;background:#283528;border:1px solid #5b6b51;border-radius:9px;padding:10px;cursor:pointer}button:active{filter:brightness(1.35);transform:translateY(1px)}button.active{border-color:var(--lime);background:#394a2b;color:#f4ffd0}
+#app{height:100dvh;display:flex;flex-direction:column;max-width:1100px;margin:auto;background:#101610}
+header{padding:9px 12px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(90deg,#202a20,#111812);border-bottom:1px solid #394636;gap:10px}
+.brand{font-weight:950;letter-spacing:1.4px;font-size:17px}.brand small{display:block;font-size:9px;letter-spacing:2px;color:var(--lime);font-weight:600}
+#status{font-size:11px;color:var(--muted);text-align:right}
+nav{display:flex;gap:5px;padding:7px;background:#151e16;border-bottom:1px solid #33412f;overflow-x:auto;flex-shrink:0}
+nav button{flex:1;min-width:max-content;padding:8px 11px;font-size:12px}
+main{flex:1;min-height:0;position:relative;overflow:hidden}
+.screen{height:100%;overflow:auto;padding:12px;display:none;touch-action:pan-y}.screen.show{display:block}
+h2{font-size:18px;margin:2px 0 10px}h3{font-size:13px;margin:0 0 5px;color:#dbe8c9}p{font-size:12px;color:var(--muted);line-height:1.4;margin:4px 0 10px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.tile{background:linear-gradient(145deg,#202b20,#141c15);border:1px solid #394a36;border-radius:11px;padding:10px;min-width:0}.tile.selected{border-color:var(--lime);box-shadow:inset 0 0 0 1px #879d46}
+.tile .sub{font-size:10px;color:var(--muted);margin-top:4px}.tile button{width:100%;margin-top:8px;font-size:12px}
+.pill{display:inline-block;border:1px solid #50634a;border-radius:30px;padding:3px 7px;font-size:10px;color:#d1e1ad;margin:2px 2px 2px 0}
+#gameScreen{padding:0;overflow:hidden;background:#171e17}
+#world{width:100%;height:100%;display:block;touch-action:none;background:#293328}
+.hud{position:absolute;top:7px;left:7px;right:7px;display:flex;justify-content:space-between;gap:6px;pointer-events:none}
+.hudbox{background:#0b100ddd;border:1px solid #53604b;border-radius:8px;padding:6px 8px;font-size:11px;min-width:72px}
+.hudbox b{color:#f3f4e7}.meter{height:5px;background:#453c34;margin-top:4px;border-radius:5px;overflow:hidden}.meter i{display:block;height:100%;background:#a8c65a;width:100%}
+#objective{position:absolute;top:66px;left:50%;transform:translateX(-50%);background:#0b100dcc;border:1px solid #4b5c43;border-radius:8px;padding:5px 9px;font-size:10px;text-align:center;white-space:nowrap;pointer-events:none}
+#feed{position:absolute;left:9px;bottom:142px;font-size:10px;max-width:54%;color:#e3e7d7;text-shadow:0 1px 2px #000;pointer-events:none}
+#controls{position:absolute;bottom:max(10px,env(safe-area-inset-bottom));left:0;right:0;height:130px;pointer-events:none}
+#stick{position:absolute;left:15px;bottom:9px;width:112px;height:112px;border:2px solid #a2b29488;background:#17201799;border-radius:50%;pointer-events:auto;touch-action:none}
+#nub{position:absolute;left:31px;top:31px;width:46px;height:46px;background:#a5b89199;border:1px solid #d5e1c5;border-radius:50%}
+.action{position:absolute;pointer-events:auto;border-radius:50%;width:61px;height:61px;padding:0;font-size:11px;font-weight:800;background:#253023d9;border:2px solid #c5d5a4}
+#fire{right:17px;bottom:22px;width:76px;height:76px;background:#63352ddd;border-color:#ee9a78}
+#reload{right:102px;bottom:12px;width:49px;height:49px}
+#aim{right:103px;bottom:69px;width:43px;height:43px}
+#jump{right:22px;bottom:105px;width:43px;height:43px}
+#swap{right:161px;bottom:13px;width:46px;height:46px}
+#startOverlay{position:absolute;inset:0;background:#0b100bdc;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center}
+.modal{max-width:390px;background:#1b251c;border:1px solid #667958;border-radius:15px;padding:20px;box-shadow:0 20px 60px #0009}.modal h2{font-size:23px}.modal button{width:100%;margin-top:8px;background:#45582f;border-color:#a4bd5d;font-weight:800}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid #33402f;font-size:12px}.row span{color:var(--muted)}
+.smallbtn{padding:6px 8px;font-size:11px}
+footer{font-size:9px;color:#7f8d78;padding:5px 10px;border-top:1px solid #283628;background:#101610}
+@media(min-width:700px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.screen{padding:16px}#app{border-left:1px solid #273326;border-right:1px solid #273326}}
+</style></head>
+<body><div id="app">
+<header><div class="brand">☢ ЗОНА: ВОЙНА ГРУППИРОВОК<small>МОБИЛЬНЫЙ ТАКТИЧЕСКИЙ ШУТЕР</small></div><div id="status">КОРДОН · ОПЕРАЦИЯ 01<br>СЕТЬ: ОФЛАЙН-ПРОТОТИП</div></header>
+<nav id="nav"><button data-screen="play" class="active">▶ Бой</button><button data-screen="factions">Группировки</button><button data-screen="arsenal">Арсенал</button><button data-screen="maps">Локации</button><button data-screen="warroom">Война группировок</button><button data-screen="diplomacy">Дипломатия</button><button data-screen="profile">База и профиль</button></nav>
+<main>
+<section id="play" class="screen show"><div class="grid">
+<div class="tile"><h3>БЫСТРЫЙ БОЙ</h3><p>Захватывай точку, отбивай атаки ботов и собирай припасы.</p><button id="quickStart">НАЧАТЬ ОПЕРАЦИЮ</button></div>
+<div class="tile"><h3>ТЕКУЩИЙ БОЕЦ</h3><div id="fighterSummary">Одиночки · Новичок</div><p id="loadoutSummary">АК-74М · ПМ · Аптечка</p><button data-goto="arsenal">ИЗМЕНИТЬ СНАРЯЖЕНИЕ</button></div>
+<div class="tile"><h3>РЕЖИМЫ</h3><div id="modeOptions"><button class="active" data-mode="dom">Захват</button><button data-mode="tdm">Командный бой</button><button data-mode="survival">Выживание</button></div><p id="modeDesc">Удерживай точку, чтобы набрать очки.</p></div>
+<div class="tile"><h3>СОВЕТ ПО ЗОНЕ</h3><p>Не стой на месте. Перезаряжайся за укрытием, а аптечки береги для тяжёлых боёв.</p><span class="pill">Боты</span><span class="pill">Припасы</span><span class="pill">Захват точек</span></div></div></section>
+<section id="factions" class="screen"><h2>Группировки Зоны</h2><p>Выбери сторону операции. Состав и названия отражают известные фракции вселенной S.T.A.L.K.E.R.; это фанатский прототип.</p><div id="factionGrid" class="grid"></div></section>
+<section id="arsenal" class="screen"><h2>Арсенал</h2><p>Выбери основное оружие. Боевые характеристики игровые и условные, не реальные.</p><div id="weaponGrid" class="grid"></div><h2 style="margin-top:16px">Снаряжение</h2><div id="gearGrid" class="grid"></div></section>
+<section id="maps" class="screen"><h2>Карта Зоны</h2><p>У каждой локации свой цвет окружения и сложность боя.</p><div id="mapGrid" class="grid"></div></section>
+<section id="diplomacy" class="screen"><h2>Дипломатия группировок</h2><p>Объявляй войну соперникам или заключай перемирие. В этом одиночном прототипе отношения влияют на состав противников в бою; сетевой дипломатии пока нет.</p><div class="tile"><h3>ТВОЯ ГРУППИРОВКА</h3><div id="diplomacySelf"></div><p>Выбери противника, чтобы изменить отношения.</p></div><div id="diplomacyGrid" class="grid" style="margin-top:9px"></div></section>
+
+<section id="warroom" class="screen">
+<h2>Война группировок · Стратегическая карта</h2>
+<p>Здесь ты командуешь группировками, а не отдельным бойцом: назначай отряды на локации и опорные точки, объявляй войну и проводи стратегические операции.</p>
+<div class="tile">
+<h3>КОМАНДОВАНИЕ</h3>
+<div class="row"><b>Твоя сторона</b><span id="warSelf">Одиночки</span></div>
+<div class="row"><b>Противник</b><span><select id="warEnemy" aria-label="Выбрать противника"></select></span></div>
+<div class="row"><b>Отряды в резерве</b><span id="reserveCount">6</span></div>
+<div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:9px">
+<button id="declareWar">⚔ ОБЪЯВИТЬ ВОЙНУ</button><button id="makePeace">☮ ПРЕДЛОЖИТЬ МИР</button>
+</div><p id="warNotice">Выбери противника и расставь силы.</p>
+</div>
+<h3 style="margin-top:14px">РАССТАНОВКА ПО ЛОКАЦИЯМ И ТОЧКАМ</h3>
+<p>У каждой позиции есть гарнизон. Распределяй свои отряды по стратегическим точкам.</p>
+<div id="strategicPoints" class="grid"></div>
+<div class="tile" style="margin-top:10px">
+<h3>ПЛАН ОПЕРАЦИИ</h3><p id="planSummary">Позиции не назначены.</p>
+<button id="launchCampaign" style="width:100%;background:#45582f;border-color:#a4bd5d;font-weight:800">НАЧАТЬ ВОЙНУ ЗА ТЕРРИТОРИИ</button>
+<button id="resetDeploy" style="width:100%;margin-top:7px">СБРОСИТЬ РАССТАНОВКУ</button>
+</div>
+</section>
+
+<section id="profile" class="screen"><h2>База и боец</h2><div class="tile"><h3>ПРОФИЛЬ</h3><div class="row"><b>Ранг</b><span id="rank">Новичок</span></div><div class="row"><b>Репутация</b><span id="rep">0</span></div><div class="row"><b>Кредиты</b><span id="credits">300</span></div><div class="row"><b>Операции завершены</b><span id="ops">0</span></div></div><div class="tile" style="margin-top:10px"><h3>УЛУЧШЕНИЯ БАЗЫ</h3><p>Улучшения действуют в этом прототипе, пока страница открыта.</p><div id="upgradeGrid"></div></div><div class="tile" style="margin-top:10px"><h3>ЧЕСТНО О ПРОТОТИПЕ</h3><p>Это автономная браузерная демоверсия с ботами. Настоящий онлайн-PvP, серверы, 3D-модели и APK сюда не входят — для них нужна отдельная разработка и инфраструктура.</p></div></section>
+<section id="gameScreen" class="screen"><canvas id="world"></canvas>
+<div class="hud"><div class="hudbox">❤️ <b id="healthText">100</b><div class="meter"><i id="healthBar"></i></div></div><div class="hudbox">🎯 <b id="scoreText">0 : 0</b><div id="teamText">Захват точки</div></div><div class="hudbox">🔫 <b id="ammoText">30 / 90</b><div id="weaponText">АК-74М</div></div></div>
+<div id="objective">ТОЧКА A · ЗАХВАТ 0%</div><div id="feed">Операция началась. Удерживай позицию!</div>
+<div id="controls"><div id="stick"><div id="nub"></div></div><button id="aim" class="action">ПРИЦЕЛ</button><button id="reload" class="action">↻</button><button id="swap" class="action">СМЕНА</button><button id="jump" class="action">⬆</button><button id="fire" class="action">ОГОНЬ</button></div>
+<div id="startOverlay"><div class="modal"><h2 id="resultTitle">ОПЕРАЦИЯ НАЧИНАЕТСЯ</h2><p id="resultText">Уничтожай противников, захватывай точку и собирай припасы.</p><button id="resume">В БОЙ</button><button id="leave" style="background:#2a352a;border-color:#687b5b">ВЕРНУТЬСЯ В МЕНЮ</button></div></div>
+</section>
+</main><footer>Фанатский проект. Неофициальная игра; не связана с разработчиками S.T.A.L.K.E.R. или War Groups.</footer></div>
+<script>
+(()=>{
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const factions=[
+['Одиночки','Исследуют Зону и помогают друг другу','#b7c69b'],['Долг','Стремятся сдержать угрозу Зоны','#b54c42'],['Свобода','Выступают за свободное изучение Зоны','#5caa54'],['Бандиты','Живут грабежом и контрабандой','#c4a24c'],['Наёмники','Работают по контрактам','#5d9fbd'],['Монолит','Фанатичные защитники центра Зоны','#b8c6d0'],['Военные','Государственные силы периметра','#718b9b'],['Учёные','Исследуют аномалии и артефакты','#d6cb7c'],['Чистое Небо','Изучают природу Зоны','#6ca8c9'],['Ренегаты','Опасные изгои болот','#8c7756'],['Грех','Мрачная группировка из расширенного лора','#8270a7'],['Последний День','Группировка из отдельных материалов серии','#b5a48a'],['Наёмники «Волкодав»','Отряд наёмников из фанатских сценариев','#7b9b9c'],['Воля','Небольшая независимая группа сталкеров','#8cb26d'],['Заря','Исследователи и проводники Зоны','#d4b86b'],['Сталкеры-ветераны','Опытные одиночки с собственными правилами','#b2b9a0'],['Военные сталкеры','Специализированные отряды периметра','#7d9eb0'],['Торговцы','Нейтральная торговая сеть Зоны','#c9a46b'],['Охотники','Выслеживают мутантов и опасные цели','#a9a36a']];
+const weapons=[
+['АК-74М','Штурмовая винтовка',30,90,7,1.0],['АКС-74У','Компактная винтовка',30,120,6,0.8],['АС «Вал»','Бесшумная штурмовая',20,80,8,1.05],['ВСС «Винторез»','Точная бесшумная винтовка',10,50,15,1.35],['СВД','Снайперская винтовка',10,40,24,1.8],['СВУ','Компактная снайперская',10,40,21,1.6],['ГП-37','Штурмовая винтовка',30,90,8,1.05],['ФТ-200М','Экспериментальная винтовка',30,90,9,1.1],['Гроза','Винтовка под мощный патрон',20,80,10,1.15],['ИЛ86','Винтовка с оптикой',30,90,7,1.0],['Сайга-12К','Дробовик',8,40,17,0.75],['СПСА-14','Автоматический дробовик',8,32,19,0.7],['БМ-16','Двустволка',2,24,22,0.6],['ТОЗ-34','Охотничье ружьё',2,24,20,0.6],['ПМ','Пистолет',8,48,5,0.65],['Фора-12','Пистолет',12,60,6,0.7],['УДП «Компакт»','Пистолет',12,60,6,0.7],['ПП-19 «Бизон»','Пистолет-пулемёт',64,128,4,0.7],['ФТ-200М','Экспериментальная винтовка',30,90,9,1.1],['ПКМ','Пулемёт',100,200,8,1.3],['РПГ-7у','Гранатомёт',1,5,40,2.0],['Гаусс-пушка','Экспериментальное оружие',10,30,35,2.1],['АКМ-74/2','Штурмовая винтовка',30,120,7,1.0],['РПК-74','Лёгкий пулемёт',45,135,8,1.15],['ОЦ-14 «Гроза»','Компактная штурмовая',20,80,10,1.1],['ПП-2000','Пистолет-пулемёт',20,100,4,0.8],['ПБ-1с','Бесшумный пистолет',8,48,5,0.6],['СР-3 «Вихрь»','Компактная винтовка',20,80,8,1.1],['МП-5','Пистолет-пулемёт',30,120,4,0.8],['РГ-6','Револьверный гранатомёт',6,18,25,1.6],['ПГМ-12','Экспериментальная винтовка',12,36,18,1.4],['Обрез','Самодельное ружьё',2,20,18,0.55],['Ремингтон 870','Помповый дробовик',6,36,17,0.7],['Карабин','Охотничий карабин',5,35,13,0.8],['Форт-12','Пистолет',12,60,5,0.65],['Беретта 92','Пистолет',15,60,5,0.7],['FN F2000','Штурмовая винтовка',30,90,9,1.1]];
+const maps=[['Кордон','Низкая','равнина'],['Свалка','Средняя','свалка'],['Тёмная долина','Средняя','долина'],['НИИ «Агропром»','Средняя','агропром'],['Болота','Низкая','болота'],['Янтарь','Средняя','янтарь'],['Армейские склады','Высокая','склады'],['Радар','Высокая','радар'],['Припять','Очень высокая','припять'],['ЧАЭС','Критическая','чаэс'],['Подземелья Агропрома','Высокая','подземелье'],['Лаборатория X-18','Критическая','лаборатория'],['Лаборатория X-16','Критическая','лаборатория'],['Затон','Средняя','затон'],['Юпитер','Средняя','юпитер'],['Окрестности «Юпитера»','Высокая','юпитер'],['Лиманск','Высокая','лимaнск'],['Красный лес','Высокая','лес'],['Военные склады','Высокая','склады'],['Деревня новичков','Низкая','кордон'],['Заброшенная фабрика','Средняя','фабрика'],['Путепровод «Припять-1»','Критическая','туннель'],['Генераторы','Критическая','чаэс'],['Восточная Припять','Очень высокая','припять'],['Пещеры','Высокая','подземелье'],['Станция переработки','Средняя','свалка'],['Старый карьер','Средняя','карьер']];
+const gear=[['Аптечка','Восстанавливает здоровье'],['Броня','Снижает входящий урон'],['Граната','Взрыв по области'],['Детектор','Помогает искать артефакты'],['Рюкзак','Больше припасов'],['Артефакт «Медуза»','Небольшая регенерация']];
+let state={faction:0,weapon:0,map:0,mode:'dom',credits:300,rep:0,ops:0,upgrades:{armor:0,med:0,ammo:0},gear:'Аптечка',relations:{}};
+const factionGrid=$('#factionGrid'),weaponGrid=$('#weaponGrid'),mapGrid=$('#mapGrid'),gearGrid=$('#gearGrid');
+function render(){
+$('#diplomacySelf').textContent=factions[state.faction][0]+' · твоя сторона';
+$('#diplomacyGrid').innerHTML=factions.map((f,i)=>{if(i===state.faction)return '';let rel=state.relations[i]||'Мир';return `<div class="tile"><h3 style="color:${f[2]}">${f[0]}</h3><div class="sub">Отношения: <b>${rel}</b></div><button data-war="${i}">${rel==='Война'?'ПРЕДЛОЖИТЬ МИР':'ОБЪЯВИТЬ ВОЙНУ'}</button></div>`}).join('');
+factionGrid.innerHTML=factions.map((f,i)=>`<div class="tile ${i===state.faction?'selected':''}"><h3 style="color:${f[2]}">▣ ${f[0]}</h3><p>${f[1]}</p><button data-f="${i}">${i===state.faction?'ВЫБРАНА':'ВЫБРАТЬ'}</button></div>`).join('');
+weaponGrid.innerHTML=weapons.map((w,i)=>`<div class="tile ${i===state.weapon?'selected':''}"><h3>▰ ${w[0]}</h3><div class="sub">${w[1]}</div><div class="sub">Магазин ${w[2]} · Урон ${w[4]} · Темп ${w[5].toFixed(1)}</div><button data-w="${i}">${i===state.weapon?'ЭКИПИРОВАНО':'ЭКИПИРОВАТЬ'}</button></div>`).join('');
+mapGrid.innerHTML=maps.map((m,i)=>`<div class="tile ${i===state.map?'selected':''}"><h3>⌖ ${m[0]}</h3><div class="sub">Опасность: ${m[1]}</div><button data-m="${i}">${i===state.map?'ВЫБРАНА':'ВЫБРАТЬ'}</button></div>`).join('');
+gearGrid.innerHTML=gear.map(g=>`<div class="tile"><h3>＋ ${g[0]}</h3><p>${g[1]}</p><button data-g="${g[0]}">ВЗЯТЬ</button></div>`).join('');
+$('#fighterSummary').textContent=factions[state.faction][0]+' · '+(state.rep>200?'Ветеран':state.rep>60?'Боец':'Новичок');
+$('#loadoutSummary').textContent=weapons[state.weapon][0]+' · '+state.gear;
+$('#credits').textContent=state.credits;$('#rep').textContent=state.rep;$('#ops').textContent=state.ops;$('#rank').textContent=state.rep>200?'Ветеран':state.rep>60?'Боец':'Новичок';
+$('#upgradeGrid').innerHTML=[['armor','Броня',100],['med','Медпункт',80],['ammo','Склад боеприпасов',90]].map(a=>`<div class="row"><div><b>${a[1]}</b><br><span>Уровень ${state.upgrades[a[0]]}</span></div><button class="smallbtn" data-up="${a[0]}" data-cost="${a[2]}">УЛУЧШИТЬ · ${a[2]}</button></div>`).join('');
+}
+function show(id){$$('.screen').forEach(s=>s.classList.toggle('show',s.id===id));$$('nav button').forEach(b=>b.classList.toggle('active',b.dataset.screen===id));}
+$$('nav button').forEach(b=>b.onclick=()=>show(b.dataset.screen));$$('[data-goto]').forEach(b=>b.onclick=()=>show(b.dataset.goto));
+document.addEventListener('click',e=>{let t=e.target;if(t.dataset.war!==undefined){let i=+t.dataset.war;if((state.relations[i]||'Мир')==='Война'){state.relations[i]='Мир';feed('Перемирие заключено с группировкой «'+factions[i][0]+'»')}else{state.relations[i]='Война';feed('Объявлена война группировке «'+factions[i][0]+'»')}render()}if(t.dataset.f!==undefined){state.faction=+t.dataset.f;if(typeof deployments!=='undefined'){deployments.forEach((pt,i)=>{if(i<2){pt.owner=state.faction;pt.troops=0}});reserveTroops=24}render()}if(t.dataset.w!==undefined){state.weapon=+t.dataset.w;render()}if(t.dataset.m!==undefined){state.map=+t.dataset.m;render()}if(t.dataset.g){state.gear=t.dataset.g;render()}if(t.dataset.up){let cost=+t.dataset.cost;if(state.credits>=cost){state.credits-=cost;state.upgrades[t.dataset.up]++;render()}else feed('Не хватает кредитов для улучшения.')}});
+$$('[data-mode]').forEach(b=>b.onclick=()=>{$$('[data-mode]').forEach(x=>x.classList.toggle('active',x===b));state.mode=b.dataset.mode;$('#modeDesc').textContent=state.mode==='dom'?'Удерживай точку, чтобы набрать очки.':state.mode==='tdm'?'Уничтожай противников, команда набирает фраги.':'Продержись против бесконечных волн.'});
+const canvas=$('#world'),ctx=canvas.getContext('2d');let running=false,raf=0,player,foes,shots,loot,frame=0,score=0,enemyScore=0,ammo=30,reserve=90,hp=100,hold=0,move={x:0,y:0},aiming=false,fireHeld=false,keys={},lastFire=0,aimPoint=null,capturePoints=[];
+function resize(){let r=canvas.getBoundingClientRect();canvas.width=Math.max(320,r.width*devicePixelRatio);canvas.height=Math.max(300,r.height*devicePixelRatio)}window.addEventListener('resize',resize);
+function feed(t){$('#feed').textContent=t}
+function begin(){show('gameScreen');resize();player={x:canvas.width*.5,y:canvas.height*.72,r:10};capturePoints=[{x:canvas.width*.5,y:canvas.height*.5,progress:0,label:'A',owner:'Нейтральная'},{x:canvas.width*.22,y:canvas.height*.34,progress:0,label:'B',owner:'Нейтральная'},{x:canvas.width*.78,y:canvas.height*.68,progress:0,label:'C',owner:'Нейтральная'}];foes=[];shots=[];loot=[];frame=0;score=enemyScore=hold=0;hp=100;let w=weapons[state.weapon];ammo=w[2];reserve=w[3];running=true;$('#startOverlay').style.display='none';feed('Операция началась. '+factions[state.faction][0]+' — в бой!');for(let i=0;i<5;i++)spawnEnemy();if(raf)cancelAnimationFrame(raf);loop()}
+function spawnEnemy(){let w=canvas.width||360,h=canvas.height||500;let side=Math.floor(Math.random()*4);foes.push({x:side===0?12:side===1?w-12:Math.random()*w,y:side===2?12:side===3?h-12:Math.random()*h*.35,r:10,hp:2,cd:Math.random()*80})}
+function shoot(){if(!running||frame-lastFire<Math.max(5,13-weapons[state.weapon][5]*4))return;if(ammo<=0){feed('Пустой магазин — перезарядись!');return}ammo--;lastFire=frame;let target=null,d=1e9;foes.forEach(e=>{let q=Math.hypot(e.x-player.x,e.y-player.y);if(q<d){d=q;target=e}});let dx=target?target.x-player.x:(aimPoint?aimPoint.x-player.x:0),dy=target?target.y-player.y:(aimPoint?aimPoint.y-player.y:-1),l=Math.hypot(dx,dy)||1;let w=weapons[state.weapon];shots.push({x:player.x,y:player.y,vx:dx/l*7,vy:dy/l*7,life:60,dmg:w[4],enemy:false})}
+function reload(){let cap=weapons[state.weapon][2],n=Math.min(cap-ammo,reserve);ammo+=n;reserve-=n;feed('Перезарядка: '+ammo+'/'+reserve)}
+function useMed(){if(hp<100){hp=Math.min(100,hp+35);feed('Аптечка использована')}else feed('Здоровье уже полное')}
+function loop(){if(!running)return;update();draw();raf=requestAnimationFrame(loop)}
+function update(){frame++;let w=canvas.width,h=canvas.height,spd=2.7;let dx=move.x+(keys.a?-1:0)+(keys.d?1:0),dy=move.y+(keys.w?-1:0)+(keys.s?1:0),l=Math.hypot(dx,dy)||1;player.x=Math.max(12,Math.min(w-12,player.x+dx/l*spd));player.y=Math.max(12,Math.min(h-12,player.y+dy/l*spd));if(fireHeld&&frame%5===0)shoot();
+if(frame%100===0&&foes.length<9)spawnEnemy();
+foes.forEach(e=>{let x=player.x-e.x,y=player.y-e.y,d=Math.hypot(x,y)||1;e.x+=x/d*.72;e.y+=y/d*.72;if(--e.cd<=0&&d<Math.min(w,h)*.75){shots.push({x:e.x,y:e.y,vx:x/d*2.8,vy:y/d*2.8,life:90,dmg:8,enemy:true});e.cd=55+Math.random()*55}if(d<18&&frame%20===0)hp-=3});
+shots.forEach(s=>{s.x+=s.vx;s.y+=s.vy;s.life--;if(!s.enemy){foes.forEach(e=>{if(e.hp>0&&Math.hypot(e.x-s.x,e.y-s.y)<e.r+4){e.hp-=s.dmg/8;s.life=0}})}else if(Math.hypot(player.x-s.x,player.y-s.y)<player.r+4){hp-=s.dmg;s.life=0}});
+foes=foes.filter(e=>{if(e.hp<=0){score++;state.rep+=1;if(Math.random()<.18)loot.push({x:e.x,y:e.y,type:'med'});return false}return true});shots=shots.filter(s=>s.life>0&&s.x>=0&&s.x<w&&s.y>=0&&s.y<h);
+loot.forEach(a=>{if(Math.hypot(player.x-a.x,player.y-a.y)<20){hp=Math.min(100,hp+20);a.got=true;feed('Найдена аптечка')}});loot=loot.filter(a=>!a.got);
+if(state.mode==='dom'){capturePoints.forEach(pt=>{if(Math.hypot(player.x-pt.x,player.y-pt.y)<Math.min(w,h)*.105){pt.progress=Math.min(150,pt.progress+1);if(pt.progress===150){pt.owner=factions[state.faction][0];pt.progress=0;score+=3;state.credits+=25;feed('Точка '+pt.label+' захвачена! +25 кредитов')}}});hold=(capturePoints[0]?.progress||0)}if(hp<=0){hp=0;finish(false)}if(state.mode==='tdm'&&score>=15)finish(true);if(state.mode==='survival'&&frame>2400)finish(true);if(state.mode==='dom'&&score>=15)finish(true);
+$('#healthText').textContent=Math.ceil(hp);$('#healthBar').style.width=hp+'%';$('#scoreText').textContent=score+' : '+enemyScore;$('#ammoText').textContent=ammo+' / '+reserve;$('#weaponText').textContent=weapons[state.weapon][0];$('#objective').textContent=state.mode==='dom'?'ТОЧКИ A / B / C · A '+Math.floor((capturePoints[0]?.progress||0)/1.5)+'%':'УБИЙСТВА · '+score+'/15';}
+function draw(){let w=canvas.width,h=canvas.height;ctx.clearRect(0,0,w,h);ctx.fillStyle=['#303c2e','#37362a','#332e28','#29383b','#263b31','#34372b'][state.map%6];ctx.fillRect(0,0,w,h);let unit=Math.max(24,w/12);ctx.strokeStyle='#ffffff0b';for(let x=0;x<w;x+=unit){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke()}for(let y=0;y<h;y+=unit){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}
+ctx.fillStyle='#555847';ctx.fillRect(w*.08,h*.22,w*.34,unit*.7);ctx.fillRect(w*.62,h*.63,w*.25,unit*.8);(capturePoints||[]).forEach(pt=>{ctx.fillStyle=pt.owner==='Нейтральная'?'#62764b':'#8b9f43';ctx.beginPath();ctx.arc(pt.x,pt.y,Math.min(w,h)*.075,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#d5e78a';ctx.lineWidth=2;ctx.beginPath();ctx.arc(pt.x,pt.y,Math.min(w,h)*.075*(1-pt.progress/150),0,Math.PI*2);ctx.stroke();ctx.fillStyle='#f4f3d8';ctx.font=`bold ${12*devicePixelRatio}px sans-serif`;ctx.fillText(pt.label,pt.x-4,pt.y+4);});
+loot.forEach(a=>{ctx.fillStyle='#c7d77a';ctx.fillRect(a.x-5,a.y-5,10,10)});shots.forEach(s=>{ctx.fillStyle=s.enemy?'#f17a57':'#f4e6a1';ctx.beginPath();ctx.arc(s.x,s.y,3*devicePixelRatio,0,Math.PI*2);ctx.fill()});
+foes.forEach(e=>{ctx.fillStyle='#b85143';ctx.fillRect(e.x-9,e.y-9,18,18);ctx.fillStyle='#251b18';ctx.fillRect(e.x-5,e.y-12,10,4)});ctx.fillStyle=factions[state.faction][2];ctx.fillRect(player.x-8,player.y-10,16,20);ctx.fillStyle='#d7dec6';ctx.fillRect(player.x-4,player.y-14,8,5);
+}
+function finish(win){running=false;state.ops++;state.credits+=win?100:20;$('#resultTitle').textContent=win?'ОПЕРАЦИЯ ВЫПОЛНЕНА':'БОЕЦ ПОГИБ';$('#resultText').textContent=(win?'Победа!':'Не удалось удержать позицию.')+' Уничтожено: '+score+'. Награда начислена.';$('#startOverlay').style.display='flex';$('#resume').textContent='ЕЩЁ ОДИН БОЙ';render()}
+$('#quickStart').onclick=begin;$('#resume').onclick=begin;$('#leave').onclick=()=>{running=false;show('play');render()};
+$$('[data-mode]').forEach(b=>b.addEventListener('click',()=>{state.mode=b.dataset.mode}));
+const stick=$('#stick'),nub=$('#nub');let stickId=null;stick.addEventListener('pointerdown',e=>{stickId=e.pointerId;stick.setPointerCapture(stickId);stickMove(e)});stick.addEventListener('pointermove',e=>{if(e.pointerId===stickId)stickMove(e)});function stickMove(e){let r=stick.getBoundingClientRect(),x=e.clientX-(r.left+r.width/2),y=e.clientY-(r.top+r.height/2),d=Math.hypot(x,y),max=34;if(d>max){x=x/d*max;y=y/d*max}nub.style.transform=`translate(${x}px,${y}px)`;move={x:x/max,y:y/max}}function endStick(){stickId=null;move={x:0,y:0};nub.style.transform=''}['pointerup','pointercancel','lostpointercapture'].forEach(ev=>stick.addEventListener(ev,endStick));
+$('#fire').addEventListener('pointerdown',e=>{e.preventDefault();fireHeld=true;shoot()});['pointerup','pointercancel','pointerleave'].forEach(ev=>$('#fire').addEventListener(ev,()=>fireHeld=false));
+$('#reload').onclick=reload;$('#swap').onclick=()=>{state.weapon=(state.weapon+1)%weapons.length;ammo=weapons[state.weapon][2];reserve=weapons[state.weapon][3];$('#weaponText').textContent=weapons[state.weapon][0];feed('Оружие: '+weapons[state.weapon][0])};$('#aim').onclick=()=>{aiming=!aiming;$('#aim').classList.toggle('active',aiming);feed(aiming?'Прицеливание включено':'Прицеливание выключено')};$('#jump').onclick=()=>{player.y=Math.max(15,player.y-25);feed('Рывок вперёд')};
+document.addEventListener('keydown',e=>{let k=e.key.toLowerCase();keys[k]=true;if(k===' ')shoot();if(k==='r')reload();if(k==='f')useMed()});document.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+
+// Стратегический режим: управление группировками и гарнизонами, а не персонажем.
+const strategicNames = [
+ ['Кордон','Южный блокпост'],['Кордон','Деревня новичков'],['Свалка','Депо'],['Свалка','Кладбище техники'],
+ ['НИИ «Агропром»','Северный вход'],['НИИ «Агропром»','Подземный комплекс'],['Тёмная долина','Фабрика'],['Тёмная долина','Баррикада'],
+ ['Болота','Старая церковь'],['Болота','Машинный двор'],['Янтарь','Бункер учёных'],['Янтарь','Периметр завода'],
+ ['Армейские склады','Военная база'],['Армейские склады','Западный пост'],['Радар','Блокпост «Борода»'],['Радар','Подход к лаборатории'],
+ ['Припять','Центральная площадь'],['Припять','Гостиница'],['ЧАЭС','Внешний периметр'],['ЧАЭС','Станция'],
+ ['Затон','Скадовск'],['Юпитер','Завод'],['Лиманск','Мост'],['Красный лес','Лесной пост'],
+ ['Лаборатория X-18','Вход в лабораторию'],['Лаборатория X-16','Контрольный зал'],['Путепровод «Припять-1»','Тоннель'],['Генераторы','Энергоблок']
+];
+let deployments = strategicNames.map((p,i)=>({location:p[0],point:p[1],owner:(i===0||i===1)?0:(i===2?3:(i===10?7:(i===12?6:((i%7)+1)%factions.length)),troops:0,contested:false}));
+let reserveTroops = 24;
+let warLog = [];
+function buildStrategicUI(){
+ const enemy=$('#warEnemy');
+ if(enemy && !enemy.dataset.ready){
+   enemy.innerHTML=factions.map((f,i)=>`<option value="${i}" ${i===1?'selected':''}>${f[0]}</option>`).join('');
+   enemy.dataset.ready='1';
+ }
+ $('#warSelf').textContent=factions[state.faction][0];
+ $('#reserveCount').textContent=reserveTroops;
+ const points=$('#strategicPoints');
+ if(!points)return;
+ points.innerHTML=deployments.map((pt,i)=>{
+   const own=pt.owner===state.faction;
+   const ownerName=pt.owner===-1?'Нейтральная':factions[pt.owner].name || factions[pt.owner][0];
+   return `<div class="tile ${own?'selected':''}"><h3>${pt.location}</h3><div><b>${pt.point}</b></div><div class="sub">Контроль: ${ownerName}</div><div class="sub">Гарнизон: ${pt.troops} отрядов ${pt.contested?'· ИДЁТ БОЙ':''}</div><div style="display:flex;gap:5px;margin-top:8px"><button class="smallbtn" data-deploy="${i}">+ Разместить отряд</button><button class="smallbtn" data-withdraw="${i}">− Снять</button></div></div>`;
+ }).join('');
+ $('#planSummary').textContent=`Размещено ${deployments.reduce((n,p)=>n+p.troops,0)} из 24 отрядов. Контролируем ${deployments.filter(p=>p.owner===state.faction).length} из ${deployments.length} позиций.`;
+}
+function strategicFeed(message){$('#warNotice').textContent=message;warLog.unshift(message);warLog=warLog.slice(0,5)}
+$('#declareWar').addEventListener('click',()=>{
+ const e=+$('#warEnemy').value;
+ if(e===state.faction){strategicFeed('Нельзя объявить войну собственной группировке.');return}
+ state.relations[e]='Война';strategicFeed('Объявлена война: '+factions[state.faction][0]+' против '+factions[e][0]+'. Расставь отряды и начни операцию.');render();buildStrategicUI();
+});
+$('#makePeace').addEventListener('click',()=>{
+ const e=+$('#warEnemy').value;
+ if(e===state.faction){strategicFeed('Выбери другую группировку.');return}
+ state.relations[e]='Мир';strategicFeed('Предложено перемирие группировке '+factions[e][0]+'. В локальном прототипе перемирие применяется сразу.');render();buildStrategicUI();
+});
+$('#strategicPoints').addEventListener('click',e=>{
+ const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.deploy!==undefined){let pt=deployments[+b.dataset.deploy];if(reserveTroops<=0){strategicFeed('Резерв пуст. Сними отряд с другой позиции.');return}if(pt.owner!==state.faction){strategicFeed('Сначала захвати позицию в ходе войны, чтобы разместить там гарнизон.');return}pt.troops++;reserveTroops--;strategicFeed('Отряд направлен на точку «'+pt.point+'».');buildStrategicUI()}
+ if(b.dataset.withdraw!==undefined){let pt=deployments[+b.dataset.withdraw];if(pt.troops>0){pt.troops--;reserveTroops++;strategicFeed('Отряд снят с точки «'+pt.point+'».');buildStrategicUI()}else strategicFeed('На этой позиции нет твоих отрядов.')}
+});
+$('#resetDeploy').addEventListener('click',()=>{deployments.forEach(p=>{if(p.owner===state.faction){reserveTroops+=p.troops;p.troops=0}});strategicFeed('Свои отряды возвращены в резерв.');buildStrategicUI()});
+$('#launchCampaign').addEventListener('click',()=>{
+ const enemy=+$('#warEnemy').value;
+ if(enemy===state.faction){strategicFeed('Выбери противника.');return}
+ if(state.relations[enemy]!=='Война'){strategicFeed('Сначала объяви войну этой группировке.');return}
+ const assigned=deployments.reduce((n,p)=>n+p.troops,0);
+ if(assigned===0){strategicFeed('Нет размещённых отрядов. Сначала назначь гарнизоны на свои позиции.');return}
+ let wins=0,losses=0;
+ deployments.forEach((pt,i)=>{
+   if(pt.owner===state.faction&&pt.troops>0){
+     const enemyHeld=pt.owner===enemy;
+     const strength=pt.troops*2+(Math.random()*5);
+     const defense=enemyHeld?5+Math.random()*8:2+Math.random()*6;
+     if(strength>defense){if(pt.owner!==state.faction)pt.owner=state.faction;wins++;pt.contested=false;pt.troops=Math.max(1,pt.troops-((Math.random()<.25)?1:0))}
+     else{losses++;pt.troops=Math.max(0,pt.troops-1);if(pt.troops===0){pt.owner=enemy;pt.contested=true}}
+   }
+ });
+ // Troops can push into adjacent enemy/neutral locations from staffed positions.
+ const staffed=deployments.filter(p=>p.owner===state.faction&&p.troops>0);
+ if(staffed.length){const targets=deployments.filter(p=>p.owner!==state.faction);for(let k=0;k<Math.min(3,staffed.length,targets.length);k++){let t=targets[(Math.random()*targets.length)|0];if(Math.random()<.58){t.owner=state.faction;t.contested=false;t.troops=1;wins++}else{losses++;t.contested=true}}}
+ state.credits+=wins*20;state.rep+=wins*3;strategicFeed(`Операция завершена: успехов ${wins}, потерь/отбитых атак ${losses}. Потери и контроль обновлены.`);render();buildStrategicUI();
+});
+const oldRender=render;
+render=function(){oldRender();buildStrategicUI()};
+
+render();
+})();
+</script></body></html>
